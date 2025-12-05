@@ -1,59 +1,55 @@
-📝 ## Full-Stack Blog Application (Node.js + Express + MongoDB + EJS + AI)
+# 📝 Full-Stack Blog Application (Node.js + Express + MongoDB + EJS + AI)
 
-A complete full-stack blog platform built using Node.js, Express, MongoDB, and EJS, featuring full user authentication, image uploads, and an AI-powered post generator that automatically creates a full blog post (title, short description, tags, content) from an uploaded image.
+A complete full-stack blog platform built using Node.js, Express, MongoDB, and EJS, featuring full user authentication, image uploads, and an AI-powered post generator that automatically creates blog content (title, short description, tags, content) from an uploaded image.
 
-🚀 Features--
+# 🚀 Features
 
-🔐 Authentication
+# 🔐 Authentication
+- User registration
+- Login / Logout
+- Password hashing using bcrypt
+- Session-based authentication using passport.js
+- Protected routes with middleware
 
-User registration
-Login / Logout
-Password hashing using bcrypt
-Session-based authentication using passport.js
-Protect routes with middleware
+# 📝 Blog System
+- Create, Read, Update, Delete posts
+- Upload images for posts
+- Each post includes:
+- Title
+- Short Description
+- Tags
+- Full Content
+- Author
+- Image
 
-📝 Blog System
+# 🤖 AI Create-Post Generator
+- Upload an image → AI automatically generates:
+- Title
+- Short Description
+- Tags
+- Full Blog Content
+- Powered by Google Gemini AI.
 
-Create, Read, Update, Delete posts
-Upload images for posts
-Each post includes:
-Title
-Short Description
-Tags
-Full Content
-Author
-Image
+# 🌐 Frontend
+- Built with EJS templates
+- Responsive UI using Bootstrap
+- Clean page layouts
+- Reusable components (partials, layouts)
 
-🤖 AI Create-Post Generator
+# 🛠️ Tech Stack
 
-Upload an image → AI automatically generates:
-Title
-Short Description
-Tags
-Full Blog Content
-Powered by Google Gemini AI.
+**Frontend**
+- HTML
+- CSS / Tailwind / Bootstrap
+- EJS (Template Engine)
 
-🌐 Frontend
+**Backend**
+- Node.js
+- Express.js
+- MongoDB & Mongoose
+- Passport.js (Authentication)
+- Multer (Image Uploads)
+- Google Generative AI SDK
 
-Built with EJS templates
-Responsive UI , using Bootstraps 
-Clean page layouts
-Reusable components
-
-🛠️ Tech Stack
-
-Frontend
-HTML
-CSS / Tailwind / Bootstrap
-EJS (Template Engine)
-
-Backend
-Node.js
-Express.js
-MongoDB & Mongoose
-Passport.js
-Multer (Image Uploads)
-Google Generative AI SDK
-
-Databases
-MongoDB 
+**Database**
+- MongoDB
