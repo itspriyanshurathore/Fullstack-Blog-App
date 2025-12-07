@@ -4,55 +4,59 @@ import cors from "cors";
 import session from "express-session";
 import passport from "passport";
 import path from "path";
+import serverless from "serverless-http";
 import { fileURLToPath } from "url";
 
-import connectDB from "./config/db.js";
-import userRoutes from "./routes/authRoutes.js";
-import homeRoutes from "./routes/homeRoutes.js";
-import passportConfig from "./config/passport.js";
-import postRoutes from "./routes/postRoutes.js";
-import aiRoutes from "./routes/ai.js";
-import profileRoutes from "./routes/profileRoutes.js";
-import commentRoutes from "./routes/commentRoutes.js";
+import connectDB from "../src/config/db.js";
+import userRoutes from "../src/routes/authRoutes.js";
+import homeRoutes from "../src/routes/homeRoutes.js";
+import postRoutes from "../src/routes/postRoutes.js";
+import aiRoutes from "../src/routes/ai.js";
+import profileRoutes from "../src/routes/profileRoutes.js";
+import commentRoutes from "../src/routes/commentRoutes.js";
+import passportConfig from "../src/config/passport.js";
 
+// Initialize passport strategies
 passportConfig(passport);
 
+// Create express app
 const app = express();
-const PORT = process.env.PORT || 4000;
 
-// dirname fix
+// Fix dirname for serverless
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// middleware
+// ===== MIDDLEWARE =====
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// session setup
+// SESSION (only works with cookie-session in Vercel, local only)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "mysecret",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false },
+    cookie: { secure: false }, // ❗ secure must remain false for non-HTTPS
   })
 );
 
-// passport middleware
+// PASSPORT
 app.use(passport.initialize());
 app.use(passport.session());
 
+// inject user into locals
 app.use((req, res, next) => {
   res.locals.user = req.user || null;
   next();
 });
 
-// view engine
+// ===== VIEW ENGINE =====
 app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
+// Must use absolute path because serverless runs from project root
+app.set("views", path.join(process.cwd(), "src", "views"));
 
-// routes
+// ===== ROUTES =====
 app.use("/", userRoutes);
 app.use("/", homeRoutes);
 app.use("/", postRoutes);
@@ -60,17 +64,18 @@ app.use("/", profileRoutes);
 app.use("/ai", aiRoutes);
 app.use("/", commentRoutes);
 
-// error handler
+// ===== ERROR HANDLER =====
 app.use((err, req, res, next) => {
   console.error("🔥 Error:", err.stack);
-  res
-    .status(500)
-    .json({ message: "Internal Server Error", error: err.message });
+  res.status(500).json({
+    message: "Internal Server Error",
+    error: err.message,
+  });
 });
 
-// start server
-connectDB().then(() => {
-  app.listen(PORT, () =>
-    console.log(`🚀 Server running at http://localhost:${PORT}`)
-  );
-});
+// ===== DATABASE CONNECT (runs once only) =====
+connectDB();
+
+// ===== EXPORT AS SERVERLESS FUNCTION =====
+export const handler = serverless(app);
+export default handler;
