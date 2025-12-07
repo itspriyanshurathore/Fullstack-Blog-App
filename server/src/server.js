@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import session from "express-session";
+import cookieSession from "cookie-session";
 import passport from "passport";
 import path from "path";
 import serverless from "serverless-http";
@@ -16,47 +16,48 @@ import profileRoutes from "../src/routes/profileRoutes.js";
 import commentRoutes from "../src/routes/commentRoutes.js";
 import passportConfig from "../src/config/passport.js";
 
-// Initialize passport strategies
+// initialize passport strategies
 passportConfig(passport);
 
-// Create express app
 const app = express();
 
-// Fix dirname for serverless
+// Correct dirname usage for serverless
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ===== MIDDLEWARE =====
-app.use(cors());
+// ====== MIDDLEWARE ======
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// SESSION (only works with cookie-session in Vercel, local only)
+// ====== FIX SESSION FOR VERCEL ======
+// express-session DOES NOT WORK on Vercel
+// Use cookie-session instead
 app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "mysecret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false }, // ❗ secure must remain false for non-HTTPS
+  cookieSession({
+    name: "session",
+    secret: process.env.SESSION_SECRET || "supersecret",
+    httpOnly: true,
+    secure: false, // must be false on Vercel free https
+    maxAge: 24 * 60 * 60 * 1000,
   })
 );
 
-// PASSPORT
+// Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// inject user into locals
+// provide user to templates
 app.use((req, res, next) => {
   res.locals.user = req.user || null;
   next();
 });
 
-// ===== VIEW ENGINE =====
+// ====== EJS VIEW ENGINE ======
 app.set("view engine", "ejs");
-// Must use absolute path because serverless runs from project root
 app.set("views", path.join(process.cwd(), "src", "views"));
 
-// ===== ROUTES =====
+// ====== ROUTES ======
 app.use("/", userRoutes);
 app.use("/", homeRoutes);
 app.use("/", postRoutes);
@@ -64,18 +65,17 @@ app.use("/", profileRoutes);
 app.use("/ai", aiRoutes);
 app.use("/", commentRoutes);
 
-// ===== ERROR HANDLER =====
+// ====== ERROR HANDLING ======
 app.use((err, req, res, next) => {
   console.error("🔥 Error:", err.stack);
-  res.status(500).json({
-    message: "Internal Server Error",
-    error: err.message,
-  });
+  res
+    .status(500)
+    .json({ message: "Internal Server Error", error: err.message });
 });
 
-// ===== DATABASE CONNECT (runs once only) =====
+// ====== DB CONNECT (runs once) ======
 connectDB();
 
-// ===== EXPORT AS SERVERLESS FUNCTION =====
+// ====== EXPORT (required for Vercel) ======
 export const handler = serverless(app);
 export default handler;

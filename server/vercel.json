@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "functions": {
+    "src/server.js": {
+      "runtime": "nodejs18.x",
+      "memory": 1024
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/server.js"
+    }
+  ]
+}
